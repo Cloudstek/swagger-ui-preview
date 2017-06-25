@@ -1,6 +1,6 @@
 {
   "name": "swagger-ui-preview",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Easy way to fire up swagger-ui and preview your swag",
   "main": "index.js",
   "bin": "bin/index.js",

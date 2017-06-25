@@ -6,19 +6,21 @@ const swaggerParser = require('swagger-parser');
 const swaggerUi = require('swagger-ui-express');
 const pkg = fs.readJsonSync(path.join(__dirname, 'package.json'));
 
+var inputFile = null;
+
 // CLI options
 cli
     .version(pkg.version)
     .arguments('<file>')
-    .option('-p, --port', 'Listen port');
+    .option('-p, --port <port>', 'Listen port', /^[0-9]+$/, 8080)
+    .action(function (file) {
+        inputFile = file;
+    });
 
 cli.parse(process.argv);
 
-// Port number
-const listenPort = cli.port || 8080;
-
 // Load document
-if (!fs.pathExistsSync(cli.args[0])) {
+if (!fs.pathExistsSync(inputFile)) {
     console.error('Input file could not be found.');
     process.exit(1);
 }
@@ -28,7 +30,7 @@ var app = express();
 
 // Serve parsed swagger file
 app.get('/swagger.yml', function (request, response) {
-    return swaggerParser.dereference(cli.args[0])
+    return swaggerParser.dereference(inputFile)
         .then(function (swaggerDoc) {
             response.send(swaggerDoc);
         });
@@ -36,10 +38,10 @@ app.get('/swagger.yml', function (request, response) {
 
 // Initialize Swagger UI
 app.use('/', swaggerUi.serve, swaggerUi.setup({}, false, {
-    url: `http://localhost:${listenPort}/swagger.yml`
+    url: `http://localhost:${cli.port}/swagger.yml`
 }));
 
 // Listen
-app.listen(listenPort);
+app.listen(cli.port);
 
-console.log(`Listening on http://localhost:${listenPort}`);
+console.log(`Listening on http://localhost:${cli.port}`);
