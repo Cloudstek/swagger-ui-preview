@@ -28,15 +28,22 @@ if (!fs.pathExistsSync(inputFile)) {
 // Initialize Express
 var app = express();
 
-// Initialize Swagger UI
-swaggerParser.dereference(inputFile)
-    .then(function (swaggerDoc) {
-        app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDoc, false, {
-            tagsSorter: 'alpha',
-            operationsSorter: 'alpha'
-        }));
+// Serve parsed swagger file
+app.get('/swagger.yml', function (request, response) {
+    return swaggerParser.dereference(inputFile)
+        .then(function (swaggerDoc) {
+            response.send(swaggerDoc);
+        });
+});
 
-        // Listen
-        app.listen(cli.port);
-        console.log(`Listening on http://localhost:${cli.port}`);
-    });
+// Initialize Swagger UI
+app.use('/', swaggerUi.serve, swaggerUi.setup({}, false, {
+    url: `http://localhost:${cli.port}/swagger.yml`,
+    tagsSorter: 'alpha',
+    operationsSorter: 'alpha'
+}));
+
+// Listen
+app.listen(cli.port);
+
+console.log(`Listening on http://localhost:${cli.port}`);
