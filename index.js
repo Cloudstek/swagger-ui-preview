@@ -28,20 +28,15 @@ if (!fs.pathExistsSync(inputFile)) {
 // Initialize Express
 var app = express();
 
-// Serve parsed swagger file
-app.get('/swagger.yml', function (request, response) {
-    return swaggerParser.dereference(inputFile)
-        .then(function (swaggerDoc) {
-            response.send(swaggerDoc);
-        });
-});
-
 // Initialize Swagger UI
-app.use('/', swaggerUi.serve, swaggerUi.setup({}, false, {
-    url: `http://localhost:${cli.port}/swagger.yml`
-}));
+swaggerParser.dereference(inputFile)
+    .then(function (swaggerDoc) {
+        app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDoc, false, {
+            tagsSorter: 'alpha',
+            operationsSorter: 'alpha'
+        }));
 
-// Listen
-app.listen(cli.port);
-
-console.log(`Listening on http://localhost:${cli.port}`);
+        // Listen
+        app.listen(cli.port);
+        console.log(`Listening on http://localhost:${cli.port}`);
+    });
